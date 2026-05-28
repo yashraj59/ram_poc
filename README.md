@@ -6,7 +6,10 @@ This is the proof-of-concept for running [autoresearch-bio](https://github.com/y
 
 - `model/model.py` — the perturbation prediction model. A dual-pathway (TF + PPI) adaptive-rounds architecture with a fast + slow memory hierarchy. Bug-fixed copy of the original `vae_esm_og.py` (see "Fixes applied" below).
 - `autoresearch.md` — the autoresearch prompt for the agent. Defines the four identity locks (TF concept, PPI concept, adaptive rounds, fast/slow memory), the architectural families, the tiered gates, the stop condition (PDS ≥ 0.80), and the autonomous Debate Council configuration.
-- `scripts/` — helper scripts the agent uses to fetch data and run cell-eval.
+- `scripts/` — helper scripts the agent uses to fetch data, run cell-eval, and generate closure plots.
+  - `download_vcc_data.sh` — pulls the GCS bucket into `data/vcc/`.
+  - `run_cell_eval.sh` — wraps the canonical `cell-eval run` invocation.
+  - `generate_closure_plots.py` — template for the eight required closure plots (PDS trajectory, status donut, family bars, MCC floor, lineage backbone, per-seed variance, local-vs-cell-eval calibration, three-acts comparison). Ports the MoFNet PoC plot aesthetic. The agent adapts the `# TODO(agent)` stubs to read the actual run's data.
 - `data/` — gitignored. Where the agent stages VCC training data, external embeddings, etc.
 - `outputs/` — gitignored. Where the agent writes experiment artifacts (`results.tsv`, journals, checkpoints, etc.).
 - `autoresearch/` — directory the agent fills with its working files during the loop.

@@ -304,30 +304,34 @@ Update `papers_consulted.md` per the literature-discipline rule (one entry per f
 
 ## Council Mode (Autonomy)
 
-Run in **autonomous Debate Council mode** (per the user's instruction to require no human intervention). Configuration:
+Run in **autonomous Debate Council mode** with **single-vendor** configuration plus **self-critique** enabled (per the user's explicit instruction).
 
-- **Council models**: prefer multi-vendor if multiple API keys are available. Default config to try first:
-  ```yaml
-  council_models:
-    architect:     anthropic/claude-opus-4.7
-    skeptic:       openai/gpt-5.5-pro
-    methodologist: google/gemini-pro
-    biologist:     anthropic/claude-opus-4.7
-    monitor:       openai/gpt-5.5-pro
-  ```
-  Fall back to `same_model_all_roles` if keys are missing; log `COUNCIL_MULTI_VENDOR_FALLBACK_USED`.
-- **Self-critique**: enabled per `references/debate_council.md` Council Process step 3.
+```yaml
+council_models: same_model_all_roles
+council_diversity: single_vendor    # logged in every closure report
+council_self_critique: enabled       # see references/debate_council.md Council Process step 3
+```
+
+- **Single-vendor caveat**: the autoresearch-bio skill documents that single-vendor councils have correlated confidence because all five roles share the same underlying LLM. The closure report must include this caveat verbatim. Do not claim consensus as independent evidence.
+- **Self-critique step (mandatory)**: before any proposal advances to the steelmanning round, the same agent that wrote the proposal must articulate the single strongest counter-argument to its own proposal and either revise or attach a `self_identified_weakness` field. Boilerplate weaknesses (anything that could be copy-pasted onto any proposal) are rejected with `COUNCIL_PROPOSAL_SELF_CRITIQUE_MISSING`.
 - **Escalation**: the council may not make biology-interpretation decisions autonomously. If a Tier 3 candidate is about to promote but the biologist role flags a marker-overlap regression or a pathway-coherence concern, the council must close with `COUNCIL_BIOLOGY_ESCALATION_REQUIRED` and write the closure report.
 - **Hard escalation triggers**: any of the conditions in `references/debate_council.md "Hard Escalation Triggers"` halt autonomous mode.
 
 ---
+
+## Compute Budget
+
+- **GPU**: single GPU with 96 GB VRAM available (e.g. H100 80GB + workstation card, or H200, or A100 80GB with NVLink — the agent does not need to assume a specific SKU). Train in mixed precision when stable.
+- **Experiment cap**: **200 experiments total** across all families.
+- **Per-experiment wall-clock guidance**: target under 4 hours per single-seed Tier 1 run with the baseline architecture. If a candidate's wall clock exceeds 8 hours, halt that run and label `TIER1_DISCARD_COMPUTE_TIMEOUT`.
+- **cell-eval cost**: each Tier 3 evaluation against the locked_test costs one cell-eval invocation at 64 threads. Budget this into the 200-experiment cap.
 
 ## Stop Conditions
 
 The loop halts and writes `final_report.md` when any of these fire:
 
 1. **PDS-0.80 reached on locked_test**. A Tier 3 candidate scores cell-eval PDS ≥ 0.80 on the official VCC validation deliverable. Promote, predict the official VCC test set, write closure.
-2. **Experiment cap**. 40 experiments without reaching PDS-0.80. Close with the strongest-PDS candidate as the model of record and report the gap to 0.80.
+2. **Experiment cap**. **200 experiments** without reaching PDS-0.80. Close with the strongest-PDS candidate as the model of record and report the gap to 0.80.
 3. **MCC floor not cleared**. At the experiment cap, no candidate clears the family-wise multiple-comparison floor over Step 0 baseline. Close with `SEARCH_CLOSED_NO_NEW_BASELINE_MCC_FLOOR`.
 4. **Catastrophic failure**: 5+ consecutive `TIER1_DISCARD_TRAINING_CRASH` or `TIER1_DISCARD_CELL_EVAL_CRASH` outcomes. Halt and document the failure mode in `final_report.md`.
 5. **Identity violation discovered post-hoc**: the council convenes, the violation goes into `identity_violations_considered.md`, and the loop halts pending amendment.
@@ -364,15 +368,38 @@ Maintain the following files in the run directory (`outputs/`):
 
 ---
 
+## Closure Plots
+
+Before writing `final_report.md`, generate the closure plots. Use `scripts/generate_closure_plots.py` as a starting template (it ships with the same aesthetic settings the MoFNet PoC used: white background, single-accent-per-plot palette, no em-dashes in captions, 85-character caption wrap). Adapt it to read this run's `results.tsv` and `cell_eval_pds` column.
+
+Required plots (write to `outputs/closure_plots/`):
+
+1. **`01_pds_trajectory.png`** — every experiment as a dot in chronological order, y-axis = cell-eval PDS (where available) and local validation PDS (where cell-eval has not been called). Color by status (discard / keep / Tier 2 / Tier 3 / baseline). Mark the 0.80 stop threshold as a horizontal line and the Step 0 baseline as another. Highlight the promoted candidate (or strongest-PDS candidate if no Tier 3 win).
+2. **`02_status_donut.png`** — distribution of outcomes across all experiments. Center text shows the total experiment count. Small slices stack outside via leader lines.
+3. **`03_family_bars.png`** — horizontal bars, experiments per family. Caption notes which family produced the model of record (or strongest candidate).
+4. **`04_mcc_floor.png`** — the family-wise multiple-comparison floor curve `z_floor(N) = 2 + sqrt(log N / 2)` over the run's experiment count, with the strongest candidate's z-score plotted against it. Use the per-seed std from `BASELINE_REGISTRY.md`.
+5. **`05_lineage_backbone.png`** — the promoted lineage in order, with PDS at each backbone node and a one-line annotation of what changed at each step. White stroke around all node labels so they read on every fill (per the MoFNet PoC pattern).
+6. **`06_per_seed_variance.png`** — per-seed cell-eval PDS for every Tier 2 and Tier 3 backbone node. Each colored dot is one seed; horizontal tick is the 5-seed mean.
+7. **`07_local_vs_celleval_calibration.png`** — scatter of local validation PDS (the model's internal approximation) against cell-eval PDS, one point per experiment that ran both. Identity line for reference. Caption notes how well the local approximation tracks the gating metric.
+8. **`08_three_acts.png`** — bar chart of Step 0 baseline / strongest Tier 1 keep / model of record (or strongest Tier 3) / 0.80 stop threshold. Hatched if test-set tuned, solid if confirmation-only.
+
+Aesthetic constraints (match the MoFNet PoC plots):
+
+- White background, single accent color per plot (the existing palette in `scripts/generate_closure_plots.py` is fine: navy `#264653`, teal `#2A9D8F`, coral `#E76F51`, amber `#E9C46A`, lilac `#9B7EBD`, plus muted gray `#9a9a9a` and soft `#d8d8d8`).
+- Sans-serif font, generous whitespace, top/right spines off.
+- Captions wrap at 85 characters, sit below the plot, no em-dashes.
+- All labels readable: dark ink text with a white stroke when text sits on top of a colored fill.
+
 ## Closure
 
 When you reach the stop condition (PDS-0.80 or the experiment cap), do this:
 
 1. Predict on the official VCC final test set using the model of record's best checkpoint.
 2. Save predictions to `outputs/final_test_predictions.h5ad`.
-3. Write `final_report.md` covering closure trigger, model of record, every architectural family's outcome, the strongest-PDS candidate's cell-eval score, the MCC floor status, retained vs deleted artifacts, and explicit no-claims wording per `references/biology_addendum.md` ("Improvement over baseline on the validation deliverable; external cohort confirmation pending").
-4. Write the `STATE_OF_PLAY.md` to reflect closure.
-5. Stop. Do not start a new experiment.
+3. Generate the closure plots per the section above.
+4. Write `final_report.md` covering closure trigger, model of record, every architectural family's outcome, the strongest-PDS candidate's cell-eval score, the MCC floor status, retained vs deleted artifacts, the eight closure plots embedded by reference, the single-vendor council caveat, and explicit no-claims wording per `references/biology_addendum.md` ("Improvement over baseline on the validation deliverable; external cohort confirmation pending").
+5. Write the `STATE_OF_PLAY.md` to reflect closure.
+6. Stop. Do not start a new experiment.
 
 ---
 
