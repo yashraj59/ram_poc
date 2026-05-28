@@ -37,23 +37,38 @@ Plus any additional cell-type or perturbation data the agent decides will help. 
 ## How to launch
 
 ```bash
-# 1. Install dependencies (in a fresh venv).
+# 1. Clone this repo and the autoresearch-bio skill side-by-side.
+#    The autoresearch.md prompt references files in the skill repo
+#    (paths like references/core_protocol.md §3.5, references/debate_council.md,
+#    references/biology_addendum.md, scripts/validate_autoresearch_artifacts.py,
+#    assets/split_manifest.schema.json). The agent reads them from
+#    ../autoresearch-bio/ relative to this repo.
+git clone https://github.com/yashraj59/ram_poc.git
+git clone https://github.com/yashraj59/autoresearch-bio.git
+cd ram_poc
+
+# 2. Install dependencies (in a fresh venv).
 pip install -r requirements.txt
 
-# 2. Authenticate to GCS (one-time).
+# 3. Authenticate to GCS (one-time).
 gcloud auth application-default login
 
-# 3. Install cell-eval. The exact install path depends on Arc Institute's release;
-# expect a pip install or a clone-and-install from their GitHub.
+# 4. Install cell-eval. The exact install path depends on Arc Institute's release;
+#    expect a pip install or a clone-and-install from their GitHub.
 pip install cell-eval  # or follow the official instructions
 
-# 4. Point your agent at autoresearch.md and let it run.
-# The agent reads autoresearch.md, fetches data, builds the four-role split,
-# runs EXP000 (the baseline), then iterates families until PDS >= 0.80 or
-# the experiment cap is hit.
+# 5. Point your agent at autoresearch.md and let it run.
+#    The agent reads autoresearch.md, also reads ../autoresearch-bio/SKILL.md
+#    and the relevant references/ files, fetches data, builds the four-role
+#    split, runs EXP000 (the baseline), then iterates families until
+#    PDS >= 0.80 or the experiment cap is hit.
 ```
 
-The launch message (chat text the user sends to the agent, separate from `autoresearch.md`) is provided in the chat where this repo was created. It tells the agent to read `autoresearch.md`, fetch the VCC data, and begin Step 0.
+### Reference-path resolution
+
+`autoresearch.md` uses relative references like `references/core_protocol.md §3.5` and `references/debate_council.md`. These resolve to the **sibling** `../autoresearch-bio/` directory after the two clones above. So `references/core_protocol.md` is actually `../autoresearch-bio/references/core_protocol.md`, and `assets/split_manifest.schema.json` is `../autoresearch-bio/assets/split_manifest.schema.json`. The agent should read both repos. The skill repo is read-only at the agent's perspective; this repo (`ram_poc/`) is where the agent writes outputs.
+
+The launch message (chat text the user sends to the agent, separate from `autoresearch.md`) is provided in the chat where this repo was created. It tells the agent to clone both repos, read `autoresearch.md`, fetch the VCC data, and begin Step 0.
 
 ## cell-eval invocation
 

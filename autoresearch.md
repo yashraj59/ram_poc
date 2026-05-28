@@ -2,6 +2,10 @@
 
 This is the autoresearch prompt for the Virtual Cell Challenge proof-of-concept. The loop is fully autonomous. Do not stop to ask the user for confirmation. The only condition under which you may halt and wait is if the official VCC data files cannot be located or downloaded.
 
+## Reference paths
+
+This prompt cites the [autoresearch-bio](https://github.com/yashraj59/autoresearch-bio) skill by relative paths like `references/core_protocol.md §3.5` and `references/debate_council.md`. Those paths resolve to the **sibling** `../autoresearch-bio/` directory that you must clone alongside this repo before launching. If you have not done that, stop, clone `https://github.com/yashraj59/autoresearch-bio` next to `ram_poc/`, then resume. Specifically: every `references/<file>.md`, `assets/<file>`, and `scripts/<file>.py` reference below resolves under `../autoresearch-bio/`.
+
 ---
 
 ## Mission
