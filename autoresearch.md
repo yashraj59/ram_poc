@@ -328,7 +328,7 @@ A literature pass is required before the next mechanism in a family launches if:
 - A metric investigation rules out the family.
 - 20 experiments have run since the last literature pass and no candidate has cleared the MCC floor.
 
-When triggered, search at least three of the canonical surfaces for the relevant domain (see `references/core_protocol.md §13`). For this VCC POC the priorities are: arXiv (q-bio.QM, cs.LG), bioRxiv (perturbation prediction), OpenReview (NeurIPS / ICLR), Connected Papers (from the seed papers below), and Semantic Scholar. Declare the fetch fingerprint at run start and keep it consistent.
+When triggered, search at least three of the canonical surfaces for the relevant domain (see `references/core_protocol.md §13`). For this RAM PoC on the VCC task the priorities are: arXiv (q-bio.QM, cs.LG), bioRxiv (perturbation prediction), OpenReview (NeurIPS / ICLR), Connected Papers (from the seed papers below), and Semantic Scholar. Declare the fetch fingerprint at run start and keep it consistent.
 
 Seed papers for the literature trail (already known to the field; the agent should look beyond these):
 

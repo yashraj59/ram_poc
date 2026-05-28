@@ -1,6 +1,6 @@
-# VCC POC — Autoresearch on Perturbation Prediction
+# RAM PoC — Autoresearch on Perturbation Prediction
 
-This is the proof-of-concept for running [autoresearch-bio](https://github.com/yashraj59/autoresearch-bio) on the Arc Institute Virtual Cell Challenge (VCC). The goal is to push cell-eval PDS to **0.80** on the official VCC validation deliverable using a fully-autonomous research loop, then predict the official test set.
+This is the proof-of-concept for running [autoresearch-bio](https://github.com/yashraj59/autoresearch-bio) on the Arc Institute Virtual Cell Challenge (VCC) with a Recurrent Adaptive Memory (RAM) style architecture. The model is the dual-pathway (TF + PPI) adaptive-rounds network with a fast + slow memory hierarchy that gave this repo its name. The goal is to push cell-eval PDS to **0.80** on the official VCC validation deliverable using a fully-autonomous research loop, then predict the official test set.
 
 ## What's in this repo
 
