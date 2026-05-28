@@ -82,6 +82,12 @@ The model file was copied from the user's `vae_esm_og.py` and the following fixe
 
 Original baseline behavior is preserved when the agent passes the same CLI arguments the user originally used.
 
+## Autonomous family amendments
+
+This run softens the default autoresearch-bio amendment rule for one specific case: the autonomous Debate Council is allowed to add new architectural families mid-loop, up to a hard cap of 4 autonomous additions across 200 experiments. Six conditions must hold (literature pass, identity preservation, Skeptic counter-argument, self-critique with concrete weakness, full family documentation, stricter Tier 1 threshold of +0.025 to offset single-vendor council correlation). See `autoresearch.md` §Architectural Families → "Procedure for autonomous family addition" for the full rule.
+
+This softening is scoped to family *additions* only. It does not extend to stop-trigger overrides, threshold relaxation, experiment-cap extension, identity-lock violations, or council-mode changes. Those still require a human turn per autoresearch-bio §14.
+
 ## Identity locks
 
 These are the four concepts the autoresearch agent must preserve. Implementation can change, the concept cannot:

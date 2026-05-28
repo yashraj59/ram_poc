@@ -189,7 +189,48 @@ Before any architectural search, run EXP000 as the Step 0 baseline and record ev
 
 ## Architectural Families
 
-Pre-specified families. The agent may not run an experiment outside these families without first writing an amendment that adds a new family.
+Six pre-specified families are listed below. The autonomous Debate Council **may amend new families into the search space mid-loop** if the literature pass or the run's own findings surface a credible additional mechanism class. This is a deliberate softening of the default autoresearch-bio amendment rule for this run, specifically scoped to *family additions* during exploration. It does NOT extend to stop-trigger amendments — those still require a supervised human turn or a separate-process council per `references/core_protocol.md §14`.
+
+### Procedure for autonomous family addition
+
+The council may add a new family only when **all six** of the following hold:
+
+1. A literature pass has run within the last 20 experiments and `papers_consulted.md` contains at least one entry that motivates the proposed mechanism class (a concrete published technique, not a model intuition).
+2. The proposed family preserves all four identity locks. A family that would delete or merge the TF / PPI / adaptive-rounds / fast+slow-memory concepts is rejected and the proposal goes into `identity_violations_considered.md`.
+3. The Skeptic role argues against the proposal explicitly and the council records the steelmanned counter-argument.
+4. The proposal passes the self-critique step (the proposer fills `self_identified_weakness` with a concrete weakness, not boilerplate).
+5. The new family's documentation matches the existing six families' format: Motivation (specific failure mode it addresses) / Hypothesis / Suggested experiments / Constraints / Stop-pivot rule.
+6. The single-vendor council caveat is noted in the amendment block — the council is one model agreeing with itself in five voices, so the new family must clear a stricter Tier 1 threshold of **+0.025 local PDS over Step 0** (versus the +0.02 the pre-specified families need) to compensate for the higher false-positive risk.
+
+### Logging requirements
+
+Every autonomous family amendment must produce:
+
+- A new entry in `family_allocation.md` with the Family number incremented (`Family 6:`, `Family 7:`, …) and the six required documentation fields.
+- A journal entry in `research_journal.md` tagged `AUTONOMOUS_FAMILY_AMENDMENT`.
+- A row in `papers_consulted.md` for the motivating paper (must already exist per condition 1, but re-cite explicitly).
+- A `self_identified_weakness` line in the amendment block.
+- A counter in `STATE_OF_PLAY.md`: `autonomous_families_added: <N>`.
+
+### Hard cap on autonomous additions
+
+No more than **4** autonomous family additions across the 200-experiment cap. If the council proposes a fifth, halt with `AUTONOMOUS_FAMILY_LIMIT_REACHED` and write a closure note explaining that the loop tried to expand the search space beyond the discipline budget — a human turn is required to amend beyond this point.
+
+### Hard ban (escalate to user, do not autonomously amend)
+
+The council may NOT autonomously:
+
+- Override or extend the experiment cap (200 is firm; halt and document).
+- Lower any Tier 1 / Tier 2 / Tier 3 threshold.
+- Relax the multiple-comparison floor.
+- Skip the literature pass requirement.
+- Promote a Tier 3 candidate without a passed cell-eval against the locked test.
+- Add a family that violates an identity lock.
+- Override the `same_model_all_roles` configuration to multi-vendor (the user pinned single-vendor explicitly).
+
+These are §14 stop-trigger-level changes and need a human turn.
+
+### The six pre-specified families
 
 ### Family 0: Training schedule and loss weights
 
